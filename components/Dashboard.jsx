@@ -32,7 +32,7 @@ const Dashboard= () => {
   const [searchedResults, setSearchedResults] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await fetch("/api/task");
+    const response = await fetch("http://localhost:3000/tasks")
     const data = await response.json();
 
     setAllPosts(data);
