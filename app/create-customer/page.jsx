@@ -21,7 +21,7 @@ const CreateCustomer = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/customer/new", {
+      const response = await fetch("http://localhost:5555/customers", {
         method: "POST",
         body: JSON.stringify({
             name:post.name,

@@ -1,62 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 
 import TaskForm from "@components/TaskForm";
 
 const UpdateTask = () => {
+
+  // return <div>My Post: {params.slug}</div>
+// }
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const taskId = searchParams.get("id");
+  const params = useParams()
+  const id = parseInt(params['id'])
 
   const [post, setPost] = useState({
-    task: "",  
+    description: "",  
     dueDate: "", 
     priority:'',
-    assignee:'',
-    customer:'',
-    note:'' 
+    customer:'' 
   });
   const [submitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const getTaskDetails = async () => {
-      const response = await fetch(`/api/task/${taskId}`);
+      const response = await fetch(`http://localhost:5555/tasks/`+id);
       const data = await response.json();
 
       setPost({
-        task: data.task,  
+        description: data.description,  
         dueDate:data.dueDate, 
         priority:data.priority,
-        assignee:data.assignee,
-        customer:data.customer,
-        note:data.note
+        status:data.status
       });
     };
 
-    if (taskId) getTaskDetails();
-  }, [taskId]);
+    getTaskDetails();
+  }, []);
+ 
 
+  
   const updateTask = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    if (!taskId) return alert("Missing TaskId!");
-
+  
     try {
-      const response = await fetch(`/api/task/${taskId}`, {
-        method: "PATCH",
+      const response = await fetch(`http://localhost:5555/tasks/`+id ,{
+        method: "PATCH",  
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          task: post.task,  
-          dueDate:post.dueDate, 
-          priority:post.priority,
-          assignee:post.assignee,
-          customer:post.customer,
-          note:post.note
+          "description": post.description,  
+          "dueDate":post.dueDate, 
+          "priority":post.priority,
+          "status":post.status
         }),
       });
-
+     
       if (response.ok) {
         router.push("/");
       }
@@ -66,15 +69,24 @@ const UpdateTask = () => {
       setIsSubmitting(false);
     }
   };
+  // async function generateStaticParams() {
+  //   const tasks = await fetch('https://localhost:5555/tasks').then((res) => res.json())
+   
+  //   return tasks.map((task) => ({
+  //     slug: task.slug,
+  //   }))
+  // }
 
+  
   return (
+    // <><div> Update Tasks{params.updatetask}</div>
     <TaskForm
-      type='Edit'
       post={post}
       setPost={setPost}
       submitting={submitting}
       handleSubmit={updateTask}
     />
+    // </>
   );
 };
 

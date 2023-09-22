@@ -3,26 +3,44 @@
 import Link from "next/link";
 import Image from "next/image";
 import Search from "./search";
-import { useEffect, useState } from "react";
-import { signIn, signOut, useSession, getProviders } from "next-auth/react";
+import { useEffect, useState, useContext } from "react";
+// import { signIn, signOut} from "next-auth/react";
+import {appContext} from '@components/Provider'
+
 
 const Nav = () => {
-  const { data: session } = useSession();
-  
+
   const [providers, setProviders] = useState(null);
   const [toggleDropdown, setToggleDropdown] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
-  useEffect(() => {
-    const setUpProviders = async () => {
-      const response = await getProviders();
+  // useEffect(() => {
+  //   const setUpProviders = async () => {
+  //     const response = await getProviders();
 
-      setProviders(response)
+  //     setProviders(response)
+  //   }
+  //   setUpProviders();
+  // },[])
+  const {user,setUser} = useContext(appContext);
+
+  function logOut(){
+    fetch('http://localhost:5555/logout',{
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify()
+    })
+    .then((res)=>res.json())
+    .then((res)=>{
+    setProfileDropdown(false)
+    setUser(false) 
     }
-    setUpProviders();
-  },[])
-
+   )
+  }
 
   return (
     <nav className='flex-between w-full mb-16 pt-3'>
@@ -37,16 +55,12 @@ const Nav = () => {
         <p className='logo_text'>Prospect Pipeline</p>
       </Link>
      
-      {/* replace isUserLoggedIn with session?.user */}
       <div className='sm:flex hidden'>
-        {session?.user ? (
+        {user ? (
           <div className='flex gap-3 md:gap-5'>
             <div className='flex gap-2 ml-2'>
         <Link href='/customers' className='black_btn'>
           Customers
-        </Link>
-        <Link href='/calendar' className='black_btn'>
-          Calendar
         </Link>
       </div>
             <button 
@@ -76,7 +90,7 @@ const Nav = () => {
             
           
               <Image
-                src={session?.user.image}
+                src='/images/newlogo.png'
                 width={37}
                 height={37}
                 className='rounded-full'
@@ -84,7 +98,7 @@ const Nav = () => {
                 onClick={()=> setProfileDropdown(!profileDropdown)}
               />
               {profileDropdown &&(
-                <div className="dropdown">
+                <div className="dropdown" top={300}>
                   <Link 
                     href='/profile'
                     className='dropdown_link'
@@ -94,30 +108,21 @@ const Nav = () => {
                   </Link>
                   <button 
                     type='button' 
-                    onClick={signOut} 
+                    onClick={logOut} 
                     className='outline_btn'
                   >
                     Sign Out
                   </button>
+                
                 </div>
               )}
             
           </div>
         ) : (
           <>
-            {providers &&
-              Object.values(providers).map((provider) => (
-                <button
-                  type='button'
-                  key={provider.name}
-                  onClick={() => {
-                    signIn(provider.id);
-                  }}
-                  className='black_btn'
-                >
-                  Sign in
-                </button>
-              ))}
+              <Link href='/login' className='link'>
+                Sign In
+              </Link>
           </>
         )}
       </div>

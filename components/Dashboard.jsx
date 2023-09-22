@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
+
 
 import TaskCard from "./TaskCard";
 
-const TaskCardList = ({ data, handleTagClick, handleHomeDelete, handleHomeEdit }) => {
+const TaskCardList = ({ data,setAllPosts}) => {
   return (
     <div className='mt-16 prompt_layout'>
       {data.map((post) => (
         <TaskCard
-          key={post._id}
-          post={post}
-          handleTagClick={handleTagClick}
-          handleHomeEdit={() => handleHomeEdit && handleHomeEdit(post)}
-        handleHomeDelete={() => handleHomeDelete && handleHomeDelete(post)}
+          key={post.id}
+          post={post}  
+          setAllPosts={setAllPosts}
+         
         />
       ))}
     </div>
@@ -31,77 +31,37 @@ const Dashboard= () => {
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [searchedResults, setSearchedResults] = useState([]);
 
-  const fetchPosts = async () => {
-    const response = await fetch("http://localhost:3000/tasks")
-    const data = await response.json();
+  useEffect(()=>{
+    fetch("http://localhost:5555/tasks")
+      .then((res)=>res.json())
+      .then((data)=>{
+        setAllPosts(data)
+      })
+  },[])
 
-    setAllPosts(data);
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const filterTasks = (searchtext) => {
-    const regex = new RegExp(searchtext, "i"); // 'i' flag for case-insensitive search
-    return allPosts.filter(
-      (item) =>
-        regex.test(item.creator.username) ||
-        regex.test(item.task) ||
-        regex.test(item.customer) ||
-        regex.test(item.assignee) ||
-        regex.test(item.priority) ||
-        regex.test(item.dueDate)
-    );
-  };
-
-  const handleSearchChange = (e) => {
-    clearTimeout(searchTimeout);
-    setSearchText(e.target.value);
-
-    // debounce method
-    setSearchTimeout(
-      setTimeout(() => {
-        const searchResult = filterTasks(e.target.value);
-        setSearchedResults(searchResult);
-      }, 500)
-    );
-  };
-
-  // const handleTagClick = (tagName) => {
-  //   setSearchText(tagName);
-
-  //   const searchResult = filterPrompts(tagName);
-  //   setSearchedResults(searchResult);
-  // };
-
-  const handleHomeEdit = (post) => {
-    router.push(`/update-task?id=${post._id}`);
-  };
-
-  const handleHomeDelete = async (post) => {
-    const hasConfirmed = confirm(
-      "Are you sure you want to delete this prompt?"
-    );
-
-    if (hasConfirmed) {
-      try {
-        await fetch(`/api/task/${post._id.toString()}`, {
-          method: "DELETE",
-        });
-
-        const filteredPosts = allPosts.filter((item) => item._id !== post._id);
-
-        setAllPosts(filteredPosts);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
+  // function handleDelete(post){
+    
+  //   fetch(`/tasks/${post.id}`,{method: "DELETE"}).then((response)=>{
+      
+  //     if (response.ok){
+  //       console.log(post.id)
+  //       setAllPosts((data)=>
+  //       data.filter((da)=>da.id !==post.id))
+  //     } else {
+  //       // Handle the case when the server returns an error (e.g., task not found)
+  //       console.error("Failed to delete task:", response.status);
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     // Handle network errors or other issues
+  //     console.error("An error occurred while deleting the task:", error);
+  //   });
+  //   }
+  
 
   return (
     <section className='feed'>
-      <form className='relative w-full flex-center'>
+      {/* <form className='relative w-full flex-center'>
         <input
           type='text'
           placeholder='Search for a tag or a username'
@@ -110,22 +70,17 @@ const Dashboard= () => {
           required
           className='search_input peer'
         />
-      </form>
-
-      {/* All Prompts */}
+      </form> */}
       {searchText ? (
         <TaskCardList
-          data={searchedResults} 
-          
-          handleHomeEdit={() => handleHomeEdit && handleHomeEdit(post)}
-          handleHomeDelete={() => handleHomeDelete && handleHomeDelete(post)}
+          data={searchedResults}
         />
       ) : (
         <TaskCardList data={allPosts} 
-        handleHomeEdit={handleHomeEdit}
-        handleHomeDelete={handleHomeDelete} />
+        setAllPosts={setAllPosts}
+  />
       )}
-      {/* handleTagClick={handleTagClick}  */}
+
     </section>
   );
 };
