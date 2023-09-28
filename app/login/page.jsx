@@ -40,7 +40,7 @@ export default function SignUp() {
           router.push("/");
 
         } else {
-          console.log('Oh no!');
+          console.log('Incorrect username/password');
         }
       };
       makePostRequest();
